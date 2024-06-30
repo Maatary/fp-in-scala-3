@@ -1,8 +1,5 @@
-import cats.data.Kleisli
+import scala.util.chaining.scalaUtilChainingOps
 
-import scala.concurrent.Future
-import scala.concurrent.ExecutionContext.Implicits.global
-import scala.util.{Failure, Success}
 import cats.effect.unsafe.implicits.given
 import cats.syntax.all.given
 import cats.effect.*
@@ -73,5 +70,12 @@ val op =
 op.unsafeRunSync()
 
 
+val state =
 
+    for
+        ref <- Ref[IO].of(10)
+        _ <- ref.update(_ + 2)
+        value <- ref.get
+    yield value
 
+state.unsafeRunSync() tap {println(_) }
