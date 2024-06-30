@@ -1,12 +1,3 @@
-//> using lib "org.typelevel::cats-core:2.12.0"
-//> using lib "org.typelevel::cats-effect:3.5.4"
-//> using lib "io.circe::circe-core:0.14.7"
-//> using lib "io.circe::circe-generic:0.14.7"
-//> using lib "io.circe::circe-parser:0.14.7"
-//> using lib "io.circe::circe-optics:0.15.0"
-//> using lib "dev.optics::monocle-core:3.2.0"
-//> using lib "dev.optics::monocle-macro:3.2.0"
-
 import cats.Traverse
 import cats.effect.*
 import cats.syntax.all.*
