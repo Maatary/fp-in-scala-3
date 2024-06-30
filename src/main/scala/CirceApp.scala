@@ -16,54 +16,132 @@ type EntityJson                     = Json
 type EntityAnnoJson                 = Json
 type EntityAnnoJsonMap              = Map[String, EntityAnnoJson]
 
-type RelationJson                   = Json
 type RelationAnnoJson               = Json
 type RelationAnnoJsonMap            = Map[String, RelationAnnoJson]
 
 type WorkJson                       = Json
 
+
+type RelationOccurrenceJson         = Json
 type CanonicalRelationJson          = Json
+type EvidenceJson                   = Json
+
 type CanonicalRelationSubGraphJson  = Json
+
 
 
 object CirceApp extends IOApp.Simple {
 
 
-    def getEntityAnnotationsMap(json: CPLDJson): Map[String, EntityAnnoJson] =
-        root.`@graph`.each
-          .filter(root.`@type`.string.getOption(_).contains("biomce:EntityAnnotation"))
-          .json
-          .foldMap { json =>
-              val id = root.`@id`.string.getOption(json).get
-              List(id -> json)
-          }(json).toMap
-
-    def getRelationAnnotations(cpldJson: CPLDJson): List[RelationAnnoJson] =
-        root.`@graph`.each
-          .filter(root.`@type`.string.getOption(_).contains("biomce:RelationAnnotation"))
-          .json
-          .foldMap { List(_) }(cpldJson)
-
-
-    def getWork(cpldJson: CPLDJson): WorkJson =
-        root.`@graph`.each
-          .filter(root.`@type`.string.getOption(_).contains("edm:Work"))
-          .json
-          .headOption(cpldJson).get
-
-
-    def LookupEntityObjects(EntityAnnoIds: List[String], entityAnnoMap: Map[String, EntityAnnoJson]): List[EntityJson] =
-
-        EntityAnnoIds.flatMap(entityAnnoMap.get).map { json =>
-            root.`oa:hasBody`.arr.index(0).getOption(json).get
-        }
-
-
-    def genCanonicalRelation(relOccurrenceJson: Json): CanonicalRelationJson =
-
+    def makeEvidenceId(relOccurrenceJson: RelationOccurrenceJson ): String =
         val id          = root.`@id`.string.getOption(relOccurrenceJson).get
         val canonicalId = root.`biomed:canonicalId`.string.getOption(relOccurrenceJson).get
         val evidenceId  = id.replace("biodata:occurrence", "biodata:evidence")
+
+        evidenceId
+
+
+    def makeEvidenceTypeObject(relOccurrenceJson: RelationOccurrenceJson): Json =
+        Json.obj("@type" -> "biomed:Evidence".asJson)
+
+
+    def makeOccurrenceAttributeObject(relOccurrenceJson: RelationOccurrenceJson): Json =
+        List(
+            root.`biomed:cellType`.string.getOption(relOccurrenceJson).fold(Json.obj())(value => Json.obj("biomed:cellType" -> value.asJson)),
+            root.`biomed:cellLine`.string.getOption(relOccurrenceJson).fold(Json.obj())(value => Json.obj("biomed:cellLine" -> value.asJson)),
+            root.`biomed:tissue`.string.getOption(relOccurrenceJson).fold(Json.obj())(value => Json.obj("biomed:tissue" -> value.asJson)),
+            root.`biomed:organism`.string.getOption(relOccurrenceJson).fold(Json.obj())(value => Json.obj("biomed:organism" -> value.asJson)),
+            root.`biomed:organ`.string.getOption(relOccurrenceJson).fold(Json.obj())(value => Json.obj("biomed:organ" -> value.asJson)),
+
+            root.`biomed:canonicalId`.string.getOption(relOccurrenceJson).map(value => Json.obj("biomed:support" -> value.asJson)).get,
+            root.`biomed:confidence`.string.getOption(relOccurrenceJson).map(value => Json.obj("biomed:confidence" -> value.asJson)).get,
+            root.`biomed:effect`.string.getOption(relOccurrenceJson).map(value => Json.obj("biomed:effect" -> value.asJson)).get,
+            )
+          .foldRight(Json.obj())(_ deepMerge _)
+
+
+    def makeAuthorObject(json: Json): Json =
+        val authors = root.`edm:hasAuthor`.each.`edm:label`.string.getAll(json).mkString(", ")
+        if (authors.nonEmpty) Json.obj("biomed:authors" -> authors.asJson) else Json.obj()
+
+
+    def makeIdsObject(workJson: WorkJson): Json =
+        val ids = root.`edm:identifier`.each.json.foldMap { json =>
+            root.`@type`.string.getOption(json).get match {
+                case "idtype:DOI" => List("biomed:doi" -> root.`@value`.string.getOption(json).get)
+                case "idtype:PII" => List("biomed:pii" -> root.`@value`.string.getOption(json).get)
+                case "idtype:PUI" => List("biomed:pui" -> root.`@value`.string.getOption(json).get)
+                case "idtype:PUBMED" => List("biomed:pmid" -> root.`@value`.string.getOption(json).get)
+                case _ => List.empty
+            }
+        }(workJson).toMap.asJson
+
+        ids
+
+    def makePageRangeObject(workJson: WorkJson): Json =
+        val startPage = root.`edm:startPage`.string.getOption(workJson)
+        val endPage = root.`edm:endPage`.string.getOption(workJson)
+        (startPage, endPage) mapN { (start, end) => Json.obj("biomed:pageRange" -> s"$start-$end".asJson) } getOrElse Json.obj()
+
+
+    def makeTitleObject(workJson: WorkJson): Json =
+        root.`edm:title`.string.getOption(workJson).fold(Json.obj())(value => Json.obj("biomed:title" -> value.asJson))
+
+
+    def makeIssueObject(workJson: WorkJson): Json =
+        root.`edm:issueLabel`.string.getOption(workJson).fold(Json.obj())(value => Json.obj("biomed:issue" -> value.asJson))
+
+
+    def makeVolumeObject(workJson: WorkJson): Json =
+        root.`edm:partOf`.`edm:volume`.string.getOption(workJson).fold(Json.obj())(value => Json.obj("biomed:volume" -> value.asJson))
+
+
+    def makeISSNObject(workJson: WorkJson): Json =
+        val issn = root.`edm:partOf`.`edm:identifier`.each.json.foldMap { identifierJson =>
+            root.`@type`.string.getOption(identifierJson).get match {
+                case "idtype:eISSN" => List("biomed:e-issn" -> root.`@value`.string.getOption(identifierJson).get)
+                case "idtype:pISSN" => List("biomed:p-issn" -> root.`@value`.string.getOption(identifierJson).get)
+                case _ => List.empty
+            }
+        }(workJson).toMap.asJson
+
+        issn
+
+    def makeJournalTitle(workJson: WorkJson): Json =
+        root.`edm:partOf`.`edm:title`.string.getOption(workJson).fold(Json.obj())(value => Json.obj("biomed:journalTitle" -> value.asJson))
+
+
+    def makePublishedYearObject(workJson: WorkJson): Json =
+        root.`edm:publishedYear`.int.getOption(workJson).fold(Json.obj())(value => Json.obj("biomed:publishedYear" -> value.asJson))
+
+
+    def makeEvidenceIdObject(evidenceId: String): Json =
+        Json.obj("@id" -> evidenceId.asJson)
+
+
+    def genEvidenceObject(evidenceId: String, relOccurrenceJson: RelationOccurrenceJson, workJson: WorkJson): EvidenceJson =
+        val authorsObj = makeAuthorObject(workJson)
+        val ids = makeIdsObject(workJson)
+        val pageRange = makePageRangeObject(workJson)
+        val issue = makeIssueObject(workJson)
+        val title = makeTitleObject(workJson)
+        val volume = makeVolumeObject(workJson)
+        val issn = makeISSNObject(workJson)
+        val journalTitle = makeJournalTitle(workJson)
+        val publishedYear = makePublishedYearObject(workJson)
+        val occurrenceAttributes = makeOccurrenceAttributeObject(relOccurrenceJson)
+        val evidenceIdObject = makeEvidenceIdObject(evidenceId)
+        val evidenceTypeObject = makeEvidenceTypeObject(relOccurrenceJson)
+
+        List(publishedYear, journalTitle, volume, issue, issn, pageRange, ids,
+             authorsObj, title, occurrenceAttributes,
+             evidenceTypeObject, evidenceIdObject)
+          .foldRight(Json.obj())(_ deepMerge _)
+
+
+
+    def genCanonicalRelationObject(relOccurrenceJson: RelationOccurrenceJson, evidenceId: String): CanonicalRelationJson =
+        val canonicalId = root.`biomed:canonicalId`.string.getOption(relOccurrenceJson).get
 
         relOccurrenceJson.asObject.get.filterKeys {
               case "biomed:regulator" | "biomed:target" | "biomed:effect" | "biomed:partner"
@@ -74,16 +152,57 @@ object CirceApp extends IOApp.Simple {
           .add("biomed:evidence", List(evidenceId).asJson)
           .asJson
 
-    def genCanonicalRelationSubGraphs(relAnnoJson: RelationAnnoJson, entityAnnoMap: Map[String, EntityAnnoJson]): List[CanonicalRelationSubGraphJson] =
 
+    def genCanonicalRelationSubGraphs(relAnnoJson: RelationAnnoJson, entityAnnoMap: Map[String, EntityAnnoJson], workJson: WorkJson): List[CanonicalRelationSubGraphJson] =
         val entityAnnoIds = root.`prov:wasInformedBy`.each.string.getAll(relAnnoJson)
-        val entityObjects = LookupEntityObjects(entityAnnoIds, entityAnnoMap)
+        val entities      = LookupEntityObjects(entityAnnoIds, entityAnnoMap)
 
         root.`oa:hasBody`.each.json.getAll(relAnnoJson) map { relOccurrenceJson =>
-            val rel = genCanonicalRelation(relOccurrenceJson)
-            //make evidence
-            JsonObject("@graph" ->  (rel::entityObjects).asJson).asJson
+
+            val evidenceId = makeEvidenceId(relOccurrenceJson)
+            val rel        = genCanonicalRelationObject(relOccurrenceJson, evidenceId)
+            val evidence   = genEvidenceObject(evidenceId, relOccurrenceJson, workJson)
+
+            JsonObject()
+              .add("@context", "https://data.elsevier.com/lifescience/context/biomed/biomce.jsonld".asJson)
+              .add("@graph", (rel::evidence::entities).asJson)
+              .asJson
+
         }
+
+
+    def LookupEntityObjects(EntityAnnoIds: List[String], entityAnnoMap: Map[String, EntityAnnoJson]): List[EntityJson] =
+
+        EntityAnnoIds.flatMap(entityAnnoMap.get).map { json =>
+            root.`oa:hasBody`.arr.index(0).getOption(json).get
+        }
+
+
+    def getWork(cpldJson: CPLDJson): WorkJson =
+        root.`@graph`.each
+          .filter(root.`@type`.string.getOption(_).contains("edm:Work"))
+          .json
+          .headOption(cpldJson).get
+
+
+    def getEntityAnnotationsMap(cpldJson: CPLDJson): Map[String, EntityAnnoJson] =
+        root.`@graph`.each
+          .filter(root.`@type`.string.getOption(_).contains("biomce:EntityAnnotation"))
+          .json
+          .foldMap { json =>
+              val id = root.`@id`.string.getOption(json).get
+              List(id -> json)
+          }(cpldJson).toMap
+
+
+    def getRelationAnnotations(cpldJson: CPLDJson): List[RelationAnnoJson] =
+        root.`@graph`.each
+          .filter(root.`@type`.string.getOption(_).contains("biomce:RelationAnnotation"))
+          .json
+          .foldMap {
+              List(_)
+          }(cpldJson)
+
 
 
     val jString =
@@ -425,7 +544,7 @@ object CirceApp extends IOApp.Simple {
         val workJson               = getWork(cpldJson)
         val relationAnnotations    = getRelationAnnotations(cpldJson)
 
-        val canonicalRelSubGraphs  = genCanonicalRelationSubGraphs(relationAnnotations.head, entityAnnotationMap)
+        val canonicalRelSubGraphs  = genCanonicalRelationSubGraphs(relationAnnotations.head, entityAnnotationMap, workJson)
 
 
         IO.println(canonicalRelSubGraphs)
