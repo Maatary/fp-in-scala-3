@@ -79,3 +79,5 @@ val state =
     yield value
 
 state.unsafeRunSync() tap {println(_) }
+
+(None:Option[Int], Some(2)).mapN(_ + _)

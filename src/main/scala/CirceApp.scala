@@ -31,9 +31,41 @@ type CanonicalRelationSubGraphJson  = Json
 
 
 object CirceApp extends IOApp.Simple {
+    
+
+    def makeSentenceIdObject(idsObject: Json, startOffset: String): Json = {
+        val idFields =
+            idsObject
+              .as[Map[String, String]]
+              .map(_.toList)
+              .getOrElse(List.empty)
+
+        val id = idFields.sortBy {
+              case ("biomed:doi", _) => 0
+              case ("biomed:pii", _) => 1
+              case ("biomed:pui", _) => 2
+              case ("biomed:pmid", _) => 3
+              case (_, _) => 4
+          }
+          .headOption.map(_._2)
+
+        id.fold(Json.obj())(id => Json.obj("biomed:sentenceId" -> s"$id#cont/$startOffset".asJson))
+    }
+
+    def makeSentenceAttributesObject(relAnnoJson: RelationAnnoJson, idsObject: Json): Json =
+        val sentenceText     = root.`oa:hasTarget`.`oa:hasSelector`.`oa:refinedBy`.`oa:exact`.string.getOption(relAnnoJson).get
+        val start            = root.`oa:hasTarget`.`oa:hasSelector`.`oa:refinedBy`.`oa:start`.int.getOption(relAnnoJson).get
+        val sentenceIdObject = makeSentenceIdObject(idsObject, start.toString)
+
+        List(
+            sentenceIdObject,
+            Json.obj("biomed:sentenceText" -> sentenceText.asJson),
+            )
+          .foldRight(Json.obj())(_ deepMerge _)
 
 
-    def makeEvidenceId(relOccurrenceJson: RelationOccurrenceJson ): String =
+
+    def makeEvidenceId(relOccurrenceJson: RelationOccurrenceJson): String =
         val id          = root.`@id`.string.getOption(relOccurrenceJson).get
         val canonicalId = root.`biomed:canonicalId`.string.getOption(relOccurrenceJson).get
         val evidenceId  = id.replace("biodata:occurrence", "biodata:evidence")
@@ -119,25 +151,28 @@ object CirceApp extends IOApp.Simple {
         Json.obj("@id" -> evidenceId.asJson)
 
 
-    def genEvidenceObject(evidenceId: String, relOccurrenceJson: RelationOccurrenceJson, workJson: WorkJson): EvidenceJson =
-        val authorsObj = makeAuthorObject(workJson)
-        val ids = makeIdsObject(workJson)
-        val pageRange = makePageRangeObject(workJson)
-        val issue = makeIssueObject(workJson)
-        val title = makeTitleObject(workJson)
-        val volume = makeVolumeObject(workJson)
-        val issn = makeISSNObject(workJson)
-        val journalTitle = makeJournalTitle(workJson)
-        val publishedYear = makePublishedYearObject(workJson)
-        val occurrenceAttributes = makeOccurrenceAttributeObject(relOccurrenceJson)
-        val evidenceIdObject = makeEvidenceIdObject(evidenceId)
-        val evidenceTypeObject = makeEvidenceTypeObject(relOccurrenceJson)
+    def genEvidenceObject(evidenceId: String, relOccurrenceJson: RelationOccurrenceJson,
+                          relAnnoJson: RelationAnnoJson, workJson: WorkJson): EvidenceJson =
 
-        List(publishedYear, journalTitle, volume, issue, issn, pageRange, ids,
-             authorsObj, title, occurrenceAttributes,
+        val evidenceIdObject     = makeEvidenceIdObject(evidenceId)
+        val evidenceTypeObject   = makeEvidenceTypeObject(relOccurrenceJson)
+        val occurrenceAttributes = makeOccurrenceAttributeObject(relOccurrenceJson)
+        val title                = makeTitleObject(workJson)
+        val authors              = makeAuthorObject(workJson)
+        val ids                  = makeIdsObject(workJson)
+        val pageRange            = makePageRangeObject(workJson)
+        val issue                = makeIssueObject(workJson)
+        val volume               = makeVolumeObject(workJson)
+        val issn                 = makeISSNObject(workJson)
+        val journalTitle         = makeJournalTitle(workJson)
+        val publishedYear        = makePublishedYearObject(workJson)
+        val sentenceAttributes   = makeSentenceAttributesObject(relAnnoJson, ids)
+
+
+        List(sentenceAttributes, publishedYear, journalTitle, volume, issue, issn, pageRange, ids,
+             authors, title, occurrenceAttributes,
              evidenceTypeObject, evidenceIdObject)
           .foldRight(Json.obj())(_ deepMerge _)
-
 
 
     def genCanonicalRelationObject(relOccurrenceJson: RelationOccurrenceJson, evidenceId: String): CanonicalRelationJson =
@@ -154,17 +189,18 @@ object CirceApp extends IOApp.Simple {
 
 
     def genCanonicalRelationSubGraphs(relAnnoJson: RelationAnnoJson, entityAnnoMap: Map[String, EntityAnnoJson], workJson: WorkJson): List[CanonicalRelationSubGraphJson] =
-        val entityAnnoIds = root.`prov:wasInformedBy`.each.string.getAll(relAnnoJson)
-        val entities      = LookupEntityObjects(entityAnnoIds, entityAnnoMap)
+        val entityAnnoIds      = root.`prov:wasInformedBy`.each.string.getAll(relAnnoJson)
+        val entities           = LookupEntityObjects(entityAnnoIds, entityAnnoMap)
+
 
         root.`oa:hasBody`.each.json.getAll(relAnnoJson) map { relOccurrenceJson =>
 
             val evidenceId = makeEvidenceId(relOccurrenceJson)
             val rel        = genCanonicalRelationObject(relOccurrenceJson, evidenceId)
-            val evidence   = genEvidenceObject(evidenceId, relOccurrenceJson, workJson)
+            val evidence   = genEvidenceObject(evidenceId, relOccurrenceJson, relAnnoJson, workJson)
 
             JsonObject()
-              .add("@context", "https://data.elsevier.com/lifescience/context/biomed/biomce.jsonld".asJson)
+              .add("@context", "https://data.elsevier.com/lifescience/context/biomed/biomkg.jsonld".asJson)
               .add("@graph", (rel::evidence::entities).asJson)
               .asJson
 
