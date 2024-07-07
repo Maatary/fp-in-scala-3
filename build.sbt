@@ -11,7 +11,10 @@ libraryDependencies ++= Seq (
     "io.circe" %% "circe-parser" % "0.14.7",
     "io.circe" %% "circe-optics" % "0.15.0",
     "dev.optics" %% "monocle-core" % "3.2.0",
-    "dev.optics" %% "monocle-macro" % "3.2.0"
+    "dev.optics" %% "monocle-macro" % "3.2.0",
+    "com.github.fd4s" %% "fs2-kafka" % "3.5.1",
+    "co.fs2" %% "fs2-core" % "3.10.2",
+    "co.fs2" %% "fs2-io" % "3.10.2",
     )
 
 
