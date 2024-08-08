@@ -575,6 +575,13 @@ object CirceApp extends IOApp.Simple {
 
     override def run: IO[Unit] = {
 
+        import io.circe._, io.circe.generic.semiauto._, io.circe.syntax._
+
+        case class Foo(a: Int, b: String, c: List[Boolean])
+
+        implicit val fooDecoder: Decoder[Foo] = deriveDecoder[Foo]
+        implicit val fooEncoder: Encoder[Foo] = deriveEncoder[Foo]
+
         val cpldJson               = parse(jString).getOrElse(Json.Null)
         val entityAnnotationMap    = getEntityAnnotationsMap(cpldJson)
         val workJson               = getWork(cpldJson)

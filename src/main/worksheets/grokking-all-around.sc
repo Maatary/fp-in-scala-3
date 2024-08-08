@@ -1,7 +1,7 @@
 import scala.util.chaining.scalaUtilChainingOps
 
-import cats.effect.unsafe.implicits.given
-import cats.syntax.all.given
+import cats.effect.unsafe.implicits.given // the given import all the implicits
+import cats.syntax.all.given // the given import all the implicits
 import cats.effect.*
 
 import scala.io.StdIn

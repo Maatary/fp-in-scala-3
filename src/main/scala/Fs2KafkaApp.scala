@@ -11,12 +11,16 @@ object Fs2KafkaApp extends IOApp.Simple {
 
     override def run: IO[Unit] =
 
+
+
+
         val producerSettings = TransactionalProducerSettings(
             s"transactional-id",
             ProducerSettings[IO, String, String]
               .withBootstrapServers("localhost:9092")
               .withRetries(10)
             )
+
 
         TransactionalKafkaProducer
           .stream(producerSettings)
