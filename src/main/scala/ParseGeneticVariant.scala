@@ -37,7 +37,7 @@ object ParseGeneticVariant extends IOApp.Simple {
         )
     }
 
-    //given RowDecoder[Row] = deriveRowDecoder[Row]
+//    given RowDecoder[Row] = deriveRowDecoder[Row]
 
 
     override def run: IO[Unit] = {
