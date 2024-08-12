@@ -579,8 +579,10 @@ object CirceApp extends IOApp.Simple {
 
         case class Foo(a: Int, b: String, c: List[Boolean])
 
-        implicit val fooDecoder: Decoder[Foo] = deriveDecoder[Foo]
-        implicit val fooEncoder: Encoder[Foo] = deriveEncoder[Foo]
+        given fooDecoder: Decoder[Foo] = deriveDecoder[Foo]
+        given fooEncoder: Encoder[Foo] = deriveEncoder[Foo]
+
+        Foo(42, "Hello, World!", List(true, false, true)).asJson
 
         val cpldJson               = parse(jString).getOrElse(Json.Null)
         val entityAnnotationMap    = getEntityAnnotationsMap(cpldJson)

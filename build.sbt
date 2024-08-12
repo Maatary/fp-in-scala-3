@@ -16,8 +16,10 @@ libraryDependencies ++= Seq (
     "com.github.fd4s" %% "fs2-kafka" % "3.5.1",
     "co.fs2" %% "fs2-core" % "3.10.2",
     "co.fs2" %% "fs2-io" % "3.10.2",
-    "org.gnieh" %% "fs2-data-csv" % "1.11.0",
+    "org.gnieh" %% "fs2-data-csv" % "1.11.1",
     "org.gnieh" %% "fs2-data-csv-generic" % "1.11.0",
+    "org.typelevel" %% "shapeless3-deriving" % "3.4.0",
+    "org.typelevel" %% "kittens" % "3.3.0",
 
     )
 
