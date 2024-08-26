@@ -3,6 +3,12 @@ ThisBuild / scalaVersion := "3.4.2"
 ThisBuild / scalacOptions += ("-explain")
 ThisBuild / Compile / run / fork := true
 
+scalaVersion := "3.4.2"
+
+scalacOptions ++= Seq(
+  "-new-syntax"
+)
+
 libraryDependencies ++= Seq (
     "org.typelevel" %% "cats-core" % "2.12.0",
     "org.typelevel" %% "cats-effect" % "3.5.4",
@@ -20,6 +26,8 @@ libraryDependencies ++= Seq (
     "org.gnieh" %% "fs2-data-csv-generic" % "1.11.0",
     "org.typelevel" %% "shapeless3-deriving" % "3.4.0",
     "org.typelevel" %% "kittens" % "3.3.0",
+    "io.github.iltotore" %% "iron" % "2.6.0",
+    "io.github.iltotore" %% "iron-circe" % "2.6.0",
 
     )
 

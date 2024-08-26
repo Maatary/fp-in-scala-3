@@ -13,6 +13,6 @@ Stream
 
 
 IO{throw RuntimeException("Error")}
-  .handleErrorWith(e => IO.println("handled error"))
+  .handleErrorWith(e => IO{e.printStackTrace()})
+  .as(ExitCode.Success)
   .unsafeRunSync()
-
