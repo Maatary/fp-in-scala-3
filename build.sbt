@@ -12,8 +12,8 @@ scalacOptions ++= Seq(
 libraryDependencies ++= Seq (
     "org.typelevel" %% "cats-core" % "2.12.0",
     "org.typelevel" %% "cats-effect" % "3.5.4",
-    "io.circe" %% "circe-core" % "0.14.7",
-    "io.circe" %% "circe-generic" % "0.14.7",
+    "io.circe" %% "circe-core" % "0.14.9",
+    "io.circe" %% "circe-generic" % "0.14.9",
     //"io.circe" %% "circe-generic-extras" % "0.14.7",
     "io.circe" %% "circe-parser" % "0.14.9",
     "io.circe" %% "circe-optics" % "0.15.0",

@@ -7,12 +7,9 @@ import fs2.text
 
 
 
-object Fs2KafkaApp extends IOApp.Simple {
+object Fs2KafkaApp extends IOApp.Simple:
 
-    override def run: IO[Unit] =
-
-
-
+    def run: IO[Unit] =
 
         val producerSettings = TransactionalProducerSettings(
             s"transactional-id",
@@ -48,4 +45,3 @@ object Fs2KafkaApp extends IOApp.Simple {
           .compile.drain*/
 
 
-}

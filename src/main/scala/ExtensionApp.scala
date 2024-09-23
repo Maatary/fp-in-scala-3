@@ -17,8 +17,7 @@ object ExtensionApp:
     def main(args: Array[String]): Unit =
 
         object StringOps:
-            extension (e: String)
-                def asOption: Option[String] = if e.isEmpty then None else Some(e)
+            extension (e: String) def asOption: Option[String] = if e.isEmpty then None else Some(e)
 
         import StringOps.*
 

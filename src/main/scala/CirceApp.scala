@@ -175,11 +175,9 @@ object CirceApp extends IOApp.Simple {
         val canonicalId = root.`biomed:canonicalId`.string.getOption(relOccurrenceJson).get
 
         relOccurrenceJson.asObject.get.filterKeys {
-            case "biomed:regulator" | "biomed:target" | "biomed:effect" | "biomed:partner"
-                | "@type" => true
-            case _ => false
-        }
-            .+:("@id", canonicalId.asJson)
+            case "biomed:regulator" | "biomed:target" | "biomed:effect" | "biomed:partner" | "@type" => true
+            case _                                                                                   => false
+        }.+:("@id", canonicalId.asJson)
             .add("biomed:evidence", List(evidenceId).asJson)
             .asJson
 

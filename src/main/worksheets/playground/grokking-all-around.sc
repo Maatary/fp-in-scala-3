@@ -64,7 +64,7 @@ val jsonR = IO.fromEither(parse(json))
 
 val op =
         jsonR flatTap: json =>
-          if (json.hcursor.downField("id").succeeded) IO.println(json.spaces2)
+          if json.hcursor.downField("id").succeeded then IO.println(json.spaces2)
           else IO.println("field does not exist")
 
 op.unsafeRunSync()
