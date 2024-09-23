@@ -12,22 +12,23 @@ scalacOptions ++= Seq(
 libraryDependencies ++= Seq (
     "org.typelevel" %% "cats-core" % "2.12.0",
     "org.typelevel" %% "cats-effect" % "3.5.4",
-    "io.circe" %% "circe-core" % "0.14.9",
-    "io.circe" %% "circe-generic" % "0.14.9",
+    "io.circe" %% "circe-core" % "0.14.10",
+    "io.circe" %% "circe-generic" % "0.14.10",
     //"io.circe" %% "circe-generic-extras" % "0.14.7",
-    "io.circe" %% "circe-parser" % "0.14.9",
+    "io.circe" %% "circe-parser" % "0.14.10",
     "io.circe" %% "circe-optics" % "0.15.0",
-    "dev.optics" %% "monocle-core" % "3.2.0",
-    "dev.optics" %% "monocle-macro" % "3.2.0",
+    "dev.optics" %% "monocle-core" % "3.3.0",
+    "dev.optics" %% "monocle-macro" % "3.3.0",
     "com.github.fd4s" %% "fs2-kafka" % "3.5.1",
-    "co.fs2" %% "fs2-core" % "3.10.2",
-    "co.fs2" %% "fs2-io" % "3.10.2",
+    "co.fs2" %% "fs2-core" % "3.11.0",
+    "co.fs2" %% "fs2-io" % "3.11.0",
     "org.gnieh" %% "fs2-data-csv" % "1.11.1",
-    "org.gnieh" %% "fs2-data-csv-generic" % "1.11.0",
-    "org.typelevel" %% "shapeless3-deriving" % "3.4.0",
-    "org.typelevel" %% "kittens" % "3.3.0",
+    "org.gnieh" %% "fs2-data-csv-generic" % "1.11.1",
+    "org.typelevel" %% "shapeless3-deriving" % "3.4.3",
+    "org.typelevel" %% "kittens" % "3.4.0",
     "io.github.iltotore" %% "iron" % "2.6.0",
     "io.github.iltotore" %% "iron-circe" % "2.6.0",
+    "is.cir" %% "ciris" % "3.6.0"
 
     )
 
