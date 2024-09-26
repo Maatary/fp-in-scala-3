@@ -14,10 +14,8 @@ case object CanonicalEntity   extends GraphObject
 case object Evidence          extends GraphObject
 
 abstract class GraphEvent[+A <: GraphObject](val key: String, val value: A)
-case class CanonicalEntityEvent(override val key: String, override val value: CanonicalEntity.type)
-    extends GraphEvent[CanonicalEntity.type](key, value)
-case class CanonicalRelationEvent(override val key: String, override val value: CanonicalRelation.type)
-    extends GraphEvent[CanonicalRelation.type](key, value)
+case class CanonicalEntityEvent(override val key: String, override val value: CanonicalEntity.type) extends GraphEvent[CanonicalEntity.type](key, value)
+case class CanonicalRelationEvent(override val key: String, override val value: CanonicalRelation.type) extends GraphEvent[CanonicalRelation.type](key, value)
 case class EvidenceEvent(override val key: String, override val value: Evidence.type) extends GraphEvent(key, value)
 
 EvidenceEvent("hello", Evidence)
@@ -74,3 +72,23 @@ val state =
 state.unsafeRunSync() tap { println(_) }
 
 (None: Option[Int], Some(2)).mapN(_ + _)
+
+List(1,2,3,4).zip(List(2,3,4))
+
+import java.util.stream.{Stream => JStream, Collectors}
+import java.util.{List => JList}
+
+
+val numbers: JStream[Integer] = JStream.of(1, 2, 3)
+
+def oddNumbers(numbers: JStream[Integer]): JStream[Integer] =
+    numbers.filter(n => n % 2 != 0)
+
+val oddNumbersStream: JStream[Integer] = oddNumbers(numbers)
+
+val result: JList[Integer] = oddNumbersStream.collect(Collectors.toList())
+
+numbers.collect(Collectors.toList())
+
+// Print the result
+println(result)
