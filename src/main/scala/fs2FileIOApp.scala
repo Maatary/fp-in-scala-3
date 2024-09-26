@@ -8,7 +8,7 @@ import cats.syntax.all.given
 import cats.effect.Temporal.*
 import scala.concurrent.duration.*
 
-object fs2IOApp extends IOApp.Simple:
+object fs2FileIOApp extends IOApp.Simple:
 
     def run: IO[Unit] =
 
@@ -20,3 +20,14 @@ object fs2IOApp extends IOApp.Simple:
             .evalTap { path => IO.println(path) }
             .compile
             .drain.as(ExitCode.Success)
+
+        /*Stream
+            .eval(Files[IO].currentWorkingDirectory)
+            .flatMap { path => Files[IO].list(path) }
+            .map { path => path.toString }
+            .take(1)
+            .repeat
+            .metered(1.second)
+            .evalTap { path => IO.println(path) }
+            .compile
+            .drain.as(ExitCode.Success)*/

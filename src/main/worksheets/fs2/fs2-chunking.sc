@@ -14,12 +14,6 @@ Stream
   .drain.unsafeRunSync()
 
 
-IO{throw RuntimeException("Error")}
-  .handleErrorWith(e => IO{e.printStackTrace()})
-  .as(ExitCode.Success)
-  .unsafeRunSync()
-
-
 
 val buf = new scala.collection.mutable.ListBuffer[String]()
 Stream.emits(0 until 2 by 1)
