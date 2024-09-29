@@ -21,6 +21,7 @@ end Data
 import Data.*
 
 val temp = Temperature("hello") // OK
+temp.asJson // OK
 temp.toUpperCase.asJson // OK
 "2".asJson
 temp.asJson

@@ -29,8 +29,8 @@ type FirstName = String :| Pure
 object FirstName extends RefinedTypeOps[String, Pure, FirstName]
 
 val firstName = FirstName("firstName")
-
 summon[Encoder[FirstName]].apply(firstName) //Encodes as a String
+//firstName.asJson //This bizarly does not work
 
 case class Person(name: FirstName, age: Int)
 
