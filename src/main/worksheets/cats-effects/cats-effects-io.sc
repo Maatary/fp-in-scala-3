@@ -18,7 +18,7 @@ val program1 =
 
 Dispatcher.sequential[IO].use { dispatcher =>
     dispatcher.unsafeRunAndForget(IO.println("Catch me if you can gain!"))
-    IO.unit
+    IO.unit.start
 }.unsafeRunSync()
 
 

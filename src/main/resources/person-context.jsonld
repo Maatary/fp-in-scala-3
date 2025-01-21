@@ -1,0 +1,11 @@
+{
+  "@context": {
+    "ex": "http://example.org/",
+    "xsd": "http://www.w3.org/2001/XMLSchema#",
+
+
+    "ex:year": {"@type": "xsd:nonNegativeInteger"},
+    "ex:nickname": {"@type": "http://www.w3.org/2001/XMLSchema#string"},
+    "ex:name": "http://example.org/name"
+  }
+}
